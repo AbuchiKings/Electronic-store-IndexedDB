@@ -6,10 +6,12 @@
     const seller = document.querySelector('#seller');
     const userid = document.querySelector('#userid');
     const showBtn = document.querySelector('#btn-get');
+    const tbody = document.querySelector('.table tBody')
 
     let db;
     let dbReq;
     let store;
+    let initUserid
     let show = true
 
     if (!('indexedDB' in window)) {
@@ -24,14 +26,8 @@
         console.log('Request successful');
         store = db.transaction('electronic_store').objectStore('electronic_store');
         getAllItems(store);
-        reqKeys = store.getAllKeys();
-        reqKeys.onsuccess = () => {
-            if (reqKeys.result.length > 0) {
-                userid.value = reqKeys.result.pop() + 1;
-            } else {
-                userid.value = 1;
-            }
-        }
+        updateDisplayedId(store);
+
     }
 
     dbReq.onerror = function (event) {
@@ -88,10 +84,22 @@
             }
             showBtn.textContent = show ? 'Hide items' : 'Show items'
         } else if (e.target.id === 'btn-update') {
-            getItem(1, store);
+            let id = Number(userid.value);
+            let data = { ID: id, name: name.value, seller: seller.value, price: price.value };
+            update(store, id, data)
+
 
         }
-    })
+    });
+
+    tbody.addEventListener('click', (e) => {
+        store = db.transaction('electronic_store', 'readwrite').objectStore('electronic_store')
+        if (e.target.classList.contains('btnedit')) {
+            let id = Number(e.target['id']);
+            initUserid = userid.value;
+            getItem(id, store)
+        }
+    });
 
 
 
@@ -102,8 +110,9 @@
             tx.onsuccess = function txSuccess() {
                 name.value = price.value = seller.value = '';
                 if (show === true) {
-                    getAllItems(store)
+                    displayItems([object])
                 }
+                updateDisplayedId(store);
                 console.log('Transaction was successfull')
             }
             tx.onerror = function txError(e) {
@@ -111,8 +120,7 @@
             }
 
         } else {
-            reqKeys = await store.getAllKeys()
-            console.log('Provide Data', reqKeys)
+            console.log('Provide Data')
         }
         return;
 
@@ -128,7 +136,7 @@
                         displayItems(reqItems.result)
 
                         console.log(reqItems.result);
-                        console.log('Transaction was successfull')
+                        console.log('Transaction successfull')
                     }
                 } else {
                     console.log('No item in store');
@@ -151,8 +159,12 @@
                 let cursor = event.target.result
                 if (cursor) {
                     object = cursor.value;
-                    console.log(object);
-                    console.log('Transaction was successfull')
+                    let properties = Object.keys(object);
+                    properties.forEach((prop) => {
+                        let input = document.querySelector(`[data-${prop}-value]`);
+                        if (input !== null) input.value = object[prop];
+                    })
+                    console.log('Transaction successfull')
 
                 } else {
                     console.log('Item not found in store');
@@ -162,6 +174,38 @@
         } catch (error) {
             console.log(error);
         }
+    }
+
+    function update(store, key, data) {
+        try {
+            store.openCursor(key).onsuccess = function (event) {
+                const cursor = event.target.result;
+                if (cursor) {
+                    let flag = isEmpty(data);
+                    if (flag) {
+                        const request = cursor.update(data);
+                        request.onsuccess = function () {
+                            name.value = price.value = seller.value = '';
+                            if (show === true) {
+                                let tBody = document.querySelector('.table tBody');
+                                tBody.innerHTML = '';
+                                getAllItems(store)
+                            }
+                            userid.value = initUserid;
+                            console.log('Transaction successful');
+                        };
+
+                    } else {
+                        console.log('Provide Data')
+                    }
+
+                }
+            };
+        } catch (error) {
+            console.log(error)
+            return;
+        }
+
     }
 
 
@@ -176,9 +220,6 @@
 
         return flag;
     }
-    // items = [{ name: "item 1", seller: "LG", price: "299", ID: 1 },
-    // { name: "item 2", seller: "Mymy", price: "23", ID: 2 },
-    // { name: "Item 3", seller: "Pz", price: "99", ID: 3 }]
 
     function displayItems(items) {
         let tBody = document.querySelector('.table tBody');
@@ -195,7 +236,7 @@
                     <td>${item.name}</td>
                     <td>${item.seller}</td>
                     <td>${item.price}</td>
-                    <td> <i class=" fa fa-edit btnedit edit" data-id =${item.ID}></i></td>
+                    <td> <i class=" fa fa-edit btnedit edit" id =${item.ID}></i></td>
                     <td><i class=" fa fa-trash btndelete" data-id =${item.ID}></i></td>
                 `
                 tr.innerHTML = row;
@@ -203,6 +244,17 @@
             })
         } else {
 
+        }
+    }
+
+    function updateDisplayedId(store) {
+        reqKeys = store.getAllKeys();
+        reqKeys.onsuccess = () => {
+            if (reqKeys.result.length > 0) {
+                userid.value = reqKeys.result.pop() + 1;
+            } else {
+                userid.value = 1;
+            }
         }
     }
 
