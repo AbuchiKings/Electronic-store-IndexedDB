@@ -21,3 +21,7 @@ table .btndelete{
     color: tomato;
     cursor: pointer;
 }
+
+table i {
+    padding: 5px;
+}

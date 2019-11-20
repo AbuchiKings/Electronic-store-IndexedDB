@@ -87,6 +87,9 @@
                 show = !show;
             }
             showBtn.textContent = show ? 'Hide items' : 'Show items'
+        } else if (e.target.id === 'btn-update') {
+            getItem(1, store);
+
         }
     })
 
@@ -139,6 +142,29 @@
 
     }
 
+    function getItem(key, store) {
+
+        try {
+            let object;
+            let reqCursor = store.openCursor(key);
+            reqCursor.onsuccess = function (event) {
+                let cursor = event.target.result
+                if (cursor) {
+                    object = cursor.value;
+                    console.log(object);
+                    console.log('Transaction was successfull')
+
+                } else {
+                    console.log('Item not found in store');
+                }
+                return object;
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+
     function isEmpty(object) {
         let flag = false;
         if (object.seller && object.price && object.name) {
@@ -169,8 +195,8 @@
                     <td>${item.name}</td>
                     <td>${item.seller}</td>
                     <td>${item.price}</td>
-                    <td data-id =${item.ID}><i class=" fa fa-edit btnedit"></i></td>
-                    <td data-id =${item.ID}><i class=" fa fa-trash btndelete"></i></td>
+                    <td> <i class=" fa fa-edit btnedit edit" data-id =${item.ID}></i></td>
+                    <td><i class=" fa fa-trash btndelete" data-id =${item.ID}></i></td>
                 `
                 tr.innerHTML = row;
                 tBody.appendChild(tr);
@@ -190,8 +216,3 @@
     }
 })()
 
-
-const bill = amount.toLocaleString({
-    style: 'currency',
-    currency: currency
-});
