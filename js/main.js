@@ -15,6 +15,9 @@
     let show = true
 
     if (!('indexedDB' in window)) {
+        const el = document.querySelector('.failure');
+        const msg = 'This browser does not support IndexedDB!'
+        showMsg(el, msg);
         console.log('This browser doesn\'t support IndexedDB');
         return;
     }
@@ -31,6 +34,9 @@
     }
 
     dbReq.onerror = function (event) {
+        const el = document.querySelector('.failure');
+        const msg = 'Error opening datatbase!'
+        showMsg(el, msg);
         console.error('error opening datatbase ' + event.target.errorCode)
         return;
     }
@@ -69,6 +75,9 @@
         }
 
         store.transaction.onerror = function (error) {
+            const el = document.querySelector('.failure');
+            const msg = 'An error occured while upgrading database!'
+            showMsg(el, msg);
             console.log('An error occured while upgrading database')
             return;
         }
@@ -127,6 +136,9 @@
         if (flag) {
             let tx = store.add(object);
             tx.onsuccess = function txSuccess() {
+                const el = document.querySelector('.success');
+                const msg = 'Success!'
+                showMsg(el, msg);
                 name.value = price.value = seller.value = '';
                 if (show === true) {
                     displayItems([object])
@@ -139,6 +151,9 @@
             }
 
         } else {
+            const el = document.querySelector('.failure');
+            const msg = 'Provide data!'
+            showMsg(el, msg);
             console.log('Provide Data')
         }
         return;
@@ -188,6 +203,9 @@
                     console.log('Transaction successfull')
 
                 } else {
+                    const el = document.querySelector('.failure');
+                    const msg = 'Item not found in store!'
+                    showMsg(el, msg);
                     console.log('Item not found in store');
                 }
                 return object;
@@ -206,6 +224,9 @@
                     if (flag) {
                         const request = cursor.update(data);
                         request.onsuccess = function () {
+                            const el = document.querySelector('.success');
+                            const msg = 'Item was successfully updated!'
+                            showMsg(el, msg);
                             name.value = price.value = seller.value = '';
                             if (show === true) {
                                 let tBody = document.querySelector('.table tBody');
@@ -215,8 +236,16 @@
                             userid.value = initUserid;
                             console.log('Transaction successful');
                         };
+                        request.onerror = function(){
+                            const el = document.querySelector('.failure');
+                            const msg = 'Could not update item'
+                            showMsg(el, msg);
+                        }
 
                     } else {
+                        const el = document.querySelector('.failure');
+                        const msg = 'Provide data!'
+                        showMsg(el, msg);
                         console.log('Provide Data')
                     }
 
@@ -241,14 +270,22 @@
                             tBody.innerHTML = '';
                             getAllItems(store)
                         }
+                        const el = document.querySelector('.success');
+                        const msg = 'Item deleted successfully!'
+                        showMsg(el, msg);
                         console.log('Item deleted successfully');
 
                     }
 
                     request.onerror = function (error) {
-                        console.log(error)
+                        const el = document.querySelector('.failure');
+                        const msg = 'Item could not be deleted!'
+                        showMsg(el, msg);
                     }
                 } else {
+                    const el = document.querySelector('.failure');
+                    const msg = 'Item not found!'
+                    showMsg(el, msg);
                     console.log('Item not found')
                 }
             }
@@ -273,6 +310,9 @@
                         tBody.innerHTML = '';
                         getAllItems(store)
                     }
+                    const el = document.querySelector('.success');
+                    const msg = 'Done!'
+                    showMsg(el, msg);
                     console.log('Done!');
                 }
             };
@@ -280,7 +320,6 @@
 
 
     }
-
 
     function isEmpty(object) {
         let flag = false;
@@ -335,13 +374,15 @@
         }
     }
 
-    function txSuccess() {
-        console.log('Transaction was successfull')
+    function showMsg(element, msg) {
+        element.textContent = msg;
+        element.classList.add('slide');
+        window.setTimeout(() => {
+            if (element.classList.contains('slide')) {
+                element.classList.remove('slide')
+            }
+        }, 3500);
     }
 
-
-    function txError(e) {
-        console.log('Error' + e.target.errorCode)
-    }
 })()
 

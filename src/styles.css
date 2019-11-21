@@ -1,3 +1,8 @@
+
+body{
+    position: relative;
+}
+
 .d-flex input {
     margin: 0.9em 0em
 }
@@ -28,3 +33,47 @@ table i {
 .no-item {
     display: none;
 }
+
+.w-100{
+    position: absolute;
+    top: -40px;
+    text-align: center;
+    padding: 5px;
+    max-width: 70%;
+    left: 50%;
+    margin-left: -35%;
+}
+
+div.slide {
+    animation: slideup 3.4s normal cubic-bezier(0, 1.5, 0.64, 1.07);
+    -webkit-animation: slideup 3.4s normal cubic-bezier(0, 1.5, 0.64, 1.07);
+}
+
+@media(max-width: 768px){
+    .w-100{
+        max-width: 100%;
+        left: 0;
+        margin-left: 0;
+    }
+}
+
+/* animation */
+@keyframes slideup{
+    50%{
+        top: 0;
+    }
+
+    100%{
+        top: -40px;
+    }
+}
+@-webkit-keyframes slideup{
+    50%{
+        top: 0;
+    }
+
+    100%{
+        top: -40px;
+    }
+}
+
