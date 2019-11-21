@@ -102,7 +102,8 @@
             let data = { ID: id, name: name.value, seller: seller.value, price: price.value };
             update(store, id, data)
 
-
+        } else if (e.target.id === 'btn-delete') {
+            deleteAllItems(store)
         }
     });
 
@@ -229,29 +230,57 @@
     }
 
     function deleteItem(store, key) {
-        store.openCursor(key).onsuccess = function (event) {
-            cursor = event.target.result;
-            if (cursor) {
-                confirm('Item will be permannently deleted from database');
-                const request = cursor.delete();
-                request.onsuccess = function () {
+        if (window.confirm('Item will be permannently deleted from database')) {
+            store.openCursor(key).onsuccess = function (event) {
+                cursor = event.target.result;
+                if (cursor) {
+                    const request = cursor.delete();
+                    request.onsuccess = function () {
+                        if (show === true) {
+                            let tBody = document.querySelector('.table tBody');
+                            tBody.innerHTML = '';
+                            getAllItems(store)
+                        }
+                        console.log('Item deleted successfully');
+
+                    }
+
+                    request.onerror = function (error) {
+                        console.log(error)
+                    }
+                } else {
+                    console.log('Item not found')
+                }
+            }
+        }
+
+    }
+
+    function deleteAllItems(store) {
+        if (window.confirm('All items will be permannently deleted from database')) {
+            store.openCursor().onsuccess = function (event) {
+                cursor = event.target.result;
+                if (cursor) {
+                    const request = cursor.delete();
+                    cursor.continue()
+                    request.onsuccess = function () {
+
+                    };
+
+                } else {
                     if (show === true) {
                         let tBody = document.querySelector('.table tBody');
                         tBody.innerHTML = '';
                         getAllItems(store)
                     }
-                    console.log('Item deleted successfully');
-
+                    console.log('Done!');
                 }
-
-                request.onerror = function (error) {
-                    console.log(error)
-                }
-            } else {
-                console.log('Item not found')
-            }
+            };
         }
+
+
     }
+
 
     function isEmpty(object) {
         let flag = false;
