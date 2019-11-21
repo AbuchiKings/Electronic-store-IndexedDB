@@ -2,26 +2,29 @@
     margin: 0.9em 0em
 }
 
-
 .d-flex button {
     margin: 1.5em 0.6em;
     padding: 0.3em 2.4em;
 }
 
-.container table{
+.container table {
     margin: 1em auto;
-
 }
 
-table .btnedit{
+table .btnedit {
     color: lightgreen;
     cursor: pointer;
 }
-table .btndelete{
+
+table .btndelete {
     color: tomato;
     cursor: pointer;
 }
 
 table i {
     padding: 5px;
+}
+
+.no-item {
+    display: none;
 }

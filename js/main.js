@@ -32,6 +32,7 @@
 
     dbReq.onerror = function (event) {
         console.error('error opening datatbase ' + event.target.errorCode)
+        return;
     }
 
     dbReq.onupgradeneeded = function (event) {
@@ -57,6 +58,19 @@
         if (!store.indexNames.contains('price')) {
             console.log('Creating index price')
             store.createIndex('price', 'price');
+        }
+
+
+    }
+
+    if (store) {
+        store.transaction.oncomplete = function () {
+            console.log('Indexes created')
+        }
+
+        store.transaction.onerror = function (error) {
+            console.log('An error occured while upgrading database')
+            return;
         }
     }
 
@@ -98,15 +112,19 @@
             let id = Number(e.target['id']);
             initUserid = userid.value;
             getItem(id, store)
+        } else if (e.target.classList.contains('btndelete')) {
+            console.log()
+            let id = Number(e.target.dataset.id);
+            deleteItem(store, id);
         }
     });
 
 
 
-    async function addItems(store, object) {
+    function addItems(store, object) {
         let flag = isEmpty(object);
         if (flag) {
-            let tx = await store.add(object);
+            let tx = store.add(object);
             tx.onsuccess = function txSuccess() {
                 name.value = price.value = seller.value = '';
                 if (show === true) {
@@ -139,6 +157,8 @@
                         console.log('Transaction successfull')
                     }
                 } else {
+                    updateDisplayedId(store)
+                    document.querySelector('#no-item').classList.remove('no-item');
                     console.log('No item in store');
                 }
 
@@ -208,6 +228,30 @@
 
     }
 
+    function deleteItem(store, key) {
+        store.openCursor(key).onsuccess = function (event) {
+            cursor = event.target.result;
+            if (cursor) {
+                confirm('Item will be permannently deleted from database');
+                const request = cursor.delete();
+                request.onsuccess = function () {
+                    if (show === true) {
+                        let tBody = document.querySelector('.table tBody');
+                        tBody.innerHTML = '';
+                        getAllItems(store)
+                    }
+                    console.log('Item deleted successfully');
+
+                }
+
+                request.onerror = function (error) {
+                    console.log(error)
+                }
+            } else {
+                console.log('Item not found')
+            }
+        }
+    }
 
     function isEmpty(object) {
         let flag = false;
@@ -224,6 +268,7 @@
     function displayItems(items) {
         let tBody = document.querySelector('.table tBody');
         if (items && items.length > 0) {
+            document.querySelector('#no-item').classList.add('no-item');
             items.forEach(item => {
                 let tr = document.createElement('tr')
                 let amount = Number(item.price);
@@ -242,18 +287,21 @@
                 tr.innerHTML = row;
                 tBody.appendChild(tr);
             })
-        } else {
-
         }
+        return;
     }
 
     function updateDisplayedId(store) {
         reqKeys = store.getAllKeys();
+
         reqKeys.onsuccess = () => {
-            if (reqKeys.result.length > 0) {
-                userid.value = reqKeys.result.pop() + 1;
-            } else {
-                userid.value = 1;
+            if (reqKeys.readyState === 'done') {
+                if (reqKeys.result && reqKeys.result.length > 0) {
+                    userid.value = reqKeys.result.pop() + 1;
+                }
+                else {
+                    userid.value = 1;
+                }
             }
         }
     }
