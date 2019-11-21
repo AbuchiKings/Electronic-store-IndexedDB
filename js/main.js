@@ -6,7 +6,8 @@
     const seller = document.querySelector('#seller');
     const userid = document.querySelector('#userid');
     const showBtn = document.querySelector('#btn-get');
-    const tbody = document.querySelector('.table tBody')
+    const tbody = document.querySelector('.table tBody');
+    const form = document.querySelector('form');
 
     let db;
     let dbReq;
@@ -129,7 +130,20 @@
         }
     });
 
+    form.addEventListener('keydown', (e) => {
+        store = db.transaction('electronic_store', 'readwrite').objectStore('electronic_store')
 
+        if (e.key === "Enter") {
+            let object = { name: name.value, seller: seller.value, price: price.value };
+
+            if (userid.value) {
+                object.ID = Number(userid.value);
+                addItems(store, object);
+            } else {
+                console.log('There was an error generating an ID for this item')
+            }
+        }
+    });
 
     function addItems(store, object) {
         let flag = isEmpty(object);
@@ -236,7 +250,7 @@
                             userid.value = initUserid;
                             console.log('Transaction successful');
                         };
-                        request.onerror = function(){
+                        request.onerror = function () {
                             const el = document.querySelector('.failure');
                             const msg = 'Could not update item'
                             showMsg(el, msg);
@@ -385,4 +399,3 @@
     }
 
 })()
-
